@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Séance 3 — Atelier Kali : Simulation de phishing</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--tx:#14202e;--mu:#5a6878;--ac:#0b6e4f;--ac2:#e8f5ef;--bd:#d9e0e8;--wa:#fff4e0;--wab:#c77700;--co:#0f1720;--cot:#8ef0b8;--fs:17px;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e141b;--card:#161e28;--tx:#e6edf5;--mu:#9aa8b8;--ac:#4cd69b;--ac2:#14302a;--bd:#2a3644;--wa:#2e2410;--wab:#f0a030;--co:#05080c;--cot:#8ef0b8}}
+:root[data-theme="dark"]{--bg:#0e141b;--card:#161e28;--tx:#e6edf5;--mu:#9aa8b8;--ac:#4cd69b;--ac2:#14302a;--bd:#2a3644;--wa:#2e2410;--wab:#f0a030;--co:#05080c;--cot:#8ef0b8}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:var(--fs)/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--card);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px;padding:8px 14px}
+header b{flex:1;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:5px 10px}
+nav{position:fixed;top:calc(env(safe-area-inset-top,0px) + 50px);bottom:0;left:0;width:min(310px,86vw);background:var(--card);border-right:1px solid var(--bd);overflow-y:auto;padding:12px;transform:translateX(-105%);transition:transform .2s;z-index:9;font-size:.9rem}
+nav.open{transform:none}
+nav a{display:block;padding:6px 8px;border-radius:6px;color:var(--tx);text-decoration:none}
+nav a:hover{background:var(--ac2)}
+main{max-width:860px;margin:0 auto;padding:16px}
+.hero{background:linear-gradient(135deg,#0b6e4f,#0f3d5e);color:#fff;border-radius:16px;padding:28px 22px;margin-bottom:18px}
+.hero h1{margin:0 0 6px;font-size:1.9rem;line-height:1.2}
+.hero p{margin:4px 0;opacity:.92}
+.hero a{color:#bff5da}
+.tag{display:inline-block;background:rgba(255,255,255,.18);border-radius:99px;padding:2px 12px;font-size:.8rem;margin:8px 6px 0 0}
+section{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px 20px;margin:14px 0}
+h2{margin:0 0 10px;font-size:1.3rem;color:var(--ac)}
+h3{margin:16px 0 6px;font-size:1.05rem}
+.w{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92em;min-width:480px}
+th,td{border:1px solid var(--bd);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--ac2)}
+pre{background:var(--co);color:var(--cot);border-radius:10px;padding:12px 14px;overflow-x:auto;font:.85rem/1.5 ui-monospace,Menlo,Consolas,monospace;margin:10px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--ac2);padding:1px 5px;border-radius:4px}
+.note,.warn,.mail{border-left:4px solid var(--ac);background:var(--ac2);padding:10px 14px;border-radius:8px;margin:12px 0}
+.warn{border-color:var(--wab);background:var(--wa)}
+.mail{border-color:#c0392b;background:var(--card);border:1px solid #c0392b;border-left-width:4px}
+.steps{display:flex;flex-wrap:wrap;gap:10px}
+.steps div{flex:1 1 170px;border:1px solid var(--bd);border-radius:10px;padding:10px}
+.steps b{color:var(--ac)}
+.q{border:1px solid var(--bd);border-radius:10px;padding:12px;margin:10px 0}
+.q label{display:block;padding:6px 8px;border-radius:6px;cursor:pointer}
+.q label:hover{background:var(--ac2)}
+.ok{color:#1a9a5b;font-weight:600}.ko{color:#c0392b;font-weight:600}
+details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+footer{text-align:center;color:var(--mu);font-size:.85rem;padding:24px 12px}
+ul{padding-left:1.2em}
+@media print{header,nav{display:none}}
+</style>
+</head>
+<body>
+<header>
+<button id="mb" aria-label="Menu">☰</button><b>Séance 3 — Atelier Kali : phishing</b>
+<button id="fm" aria-label="Réduire le texte">A−</button><button id="fp" aria-label="Agrandir le texte">A+</button><button id="th" aria-label="Thème">◐</button>
+</header>
+<nav id="nav"></nav>
+<main>
+<div class="hero">
+<p>BTS SIO • Option SISR</p>
+<h1>Séance 3 — Atelier Kali<br>Simulation de phishing</h1>
+<p>Sécuriser les équipements et les usages des utilisateurs</p>
+<span class="tag">2 heures</span><span class="tag">Atelier pratique</span><span class="tag">Environnement isolé</span>
+<p style="margin-top:12px">Auteur : Twagirumukiza • <a href="https://twagirumukiza.github.io/Twagirumukiza-Innocent/">Site de l’auteur</a></p>
+</div>
+
+<section id="s1"><h2>1. Présentation de la séance</h2>
+<p><b>Problématique :</b> comment un utilisateur peut-il identifier une tentative de phishing et comment une organisation peut-elle réduire les risques associés ?</p>
+<p>Le phishing (hameçonnage) vise à inciter une personne à cliquer sur un lien, ouvrir une pièce jointe, communiquer un mot de passe ou des informations confidentielles. L’attaquant peut se faire passer pour une banque, un fournisseur, un service informatique, un collègue ou une administration.</p>
+<h3>Objectifs pédagogiques</h3>
+<ul><li>Comprendre le fonctionnement d’une simulation de phishing.</li><li>Identifier les indices d’un e-mail suspect.</li><li>Utiliser des outils d’analyse dans un laboratoire isolé.</li><li>Parcourir les six options du menu de SET et expliquer le piège pédagogique associé.</li><li>Expliquer le rôle des filtres anti-phishing et anti-spam.</li><li>Expliquer pourquoi la MFA renforce la sécurité.</li><li>Produire un support de sensibilisation et des captures commentées.</li></ul></section>
+
+<section id="s2"><h2>2. Déroulement des 2 heures</h2><div class="w"><table>
+<tr><th>Durée</th><th>Activité</th></tr>
+<tr><td>0–15 min</td><td>Introduction au phishing et aux techniques de manipulation</td></tr>
+<tr><td>15–35 min</td><td>Découverte de Kali Linux et du laboratoire</td></tr>
+<tr><td>35–70 min</td><td>Démonstration encadrée de SET : menu, six options, piège central</td></tr>
+<tr><td>70–90 min</td><td>Analyse de messages suspects et mini-évaluation</td></tr>
+<tr><td>90–105 min</td><td>Étude des filtres et de la MFA</td></tr>
+<tr><td>105–120 min</td><td>Livrable, captures d’écran et bilan</td></tr></table></div></section>
+
+<section id="s3"><h2>3. Comprendre le scénario de phishing</h2>
+<div class="steps"><div><b>1 — Réception</b><br>E-mail annonçant une suspension imminente du compte.</div><div><b>2 — Manipulation</b><br>Le message pousse à cliquer rapidement sur un lien.</div><div><b>3 — Risque</b><br>Le lien mène à une page frauduleuse qui récupère les identifiants.</div><div><b>4 — Protection</b><br>Vérifier l’expéditeur, signaler, ne pas cliquer.</div></div>
+<h3>Exemple de message suspect <small>(fictif, à ne pas envoyer)</small></h3>
+<div class="mail"><b>Objet : URGENT — Votre compte sera suspendu</b><br>Bonjour,<br>Une activité inhabituelle a été détectée sur votre compte. Pour éviter sa suspension, veuillez vérifier vos informations immédiatement.<br><i>Action demandée : cliquer sur un lien et saisir son mot de passe.</i><br>Cordialement, Service informatique</div>
+<h3>Signaux d’alerte</h3>
+<ul><li>Urgence artificielle et menace de suspension.</li><li>Absence de contexte précis.</li><li>Demande de mot de passe par un lien reçu par e-mail.</li><li>Identité de l’expéditeur à vérifier.</li></ul>
+<div class="note">Un e-mail malveillant peut être bien rédigé et sans faute d’orthographe.</div></section>
+
+<section id="s4"><h2>4. Préparer le laboratoire Kali Linux</h2>
+<div class="w"><table><tr><th>Élément</th><th>Rôle</th></tr>
+<tr><td>Poste étudiant — Kali Linux</td><td>Outils d’analyse et démonstration de SET</td></tr>
+<tr><td>Réseau de laboratoire isolé</td><td>Réseau privé virtuel, sans exposition à Internet</td></tr>
+<tr><td>Messages de test fictifs</td><td>Fichiers .eml, captures, pages de démonstration locales</td></tr></table></div>
+<div class="warn"><b>Règles de sécurité</b><ul><li>Comptes et données exclusivement fictifs.</li><li>Aucun message de phishing envoyé à de vrais utilisateurs ; aucun vrai mot de passe collecté.</li><li>Aucune page de simulation exposée sur Internet.</li><li>Réseau interne virtuel ou Host-only, sans pont vers le réseau de l’établissement.</li><li>Instantané de la VM avant l’atelier (VMware ou VirtualBox).</li></ul></div>
+<h3>Vérifier l’environnement</h3>
+<pre>kali@kali:~$ cat /etc/os-release
+kali@kali:~$ whoami
+kali@kali:~$ ip addr
+kali@kali:~$ command -v setoolkit</pre>
+<p><code>whoami</code> affiche l’utilisateur connecté, <code>ip addr</code> les interfaces réseau, <code>command -v setoolkit</code> vérifie la présence de SET.</p>
+<p>Si SET est absent, vérifier sa disponibilité dans les dépôts officiels puis l’installer dans le laboratoire :</p>
+<pre>kali@kali:~$ sudo apt update
+kali@kali:~$ apt-cache policy set
+kali@kali:~$ sudo apt install set</pre></section>
+
+<section id="s5"><h2>5. Découvrir le Social-Engineer Toolkit (SET)</h2>
+<p>SET est un ensemble d’outils pour étudier les risques d’ingénierie sociale et conduire des tests de sécurité <b>autorisés</b>. Ici, il sert à comprendre le mécanisme d’une attaque et à observer les défenses, pas à récupérer des identifiants.</p>
+<pre>kali@kali:~$ sudo setoolkit</pre>
+<h3>Travail demandé</h3>
+<ol><li>Repérer le menu principal.</li><li>Identifier la rubrique d’ingénierie sociale.</li><li>Observer les catégories sans lancer d’attaque.</li><li>Quitter proprement l’application.</li></ol>
+<div class="warn"><b>Limite pédagogique :</b> on n’active pas la collecte d’identifiants, le clonage de pages de connexion ni l’envoi de campagnes. La démonstration repose sur l’observation de l’interface et sur des messages fictifs.</div>
+<p>📸 <b>Capture à réaliser :</b> le menu principal de SET, avec une légende expliquant son rôle.</p></section>
+
+<section id="s6"><h2>6. Parcours simulé des six options du menu SET</h2>
+<div class="note">Les résultats ci-dessous sont des exemples pédagogiques, pas des sorties réelles. Les menus peuvent varier selon la version de SET.</div>
+<pre>Social-Engineer Toolkit
+1) Social-Engineering Attacks
+2) Penetration Testing (Fast-Track)
+3) Third Party Modules
+4) Update the Social-Engineer Toolkit
+5) Update SET configuration
+6) Help, Credits, and About</pre>
+
+<details open><summary>Option 1 — Social-Engineering Attacks</summary>
+<p>Rubrique la plus pertinente pour comprendre la manipulation humaine ; on l’observe sans lancer de campagne.</p>
+<div class="mail"><b>De : Assistance informatique — identité non vérifiée</b><br><b>Objet : Votre compte sera suspendu dans 15 minutes</b><br>Une activité inhabituelle a été détectée. Veuillez effectuer une vérification immédiate.<br>[ Vérifiez votre compte immédiatement ] <small>(bouton fictif, non cliquable)</small></div>
+<p><b>Les quatre pièges :</b> la <b>peur</b> de perdre l’accès, l’<b>urgence</b> (15 minutes), l’<b>autorité</b> du service informatique, l’<b>action</b> par un lien plutôt que par le portail habituel.</p>
+<p>Bonne réaction : ne pas cliquer, vérifier par un canal connu. <i>En classe : demander aux étudiants ce qu’ils feraient avant de révéler les pièges.</i></p></details>
+
+<details><summary>Option 2 — Penetration Testing (Fast-Track)</summary>
+<p>Un risque ne se limite pas aux e-mails : il touche aussi les services et logiciels exposés.</p>
+<pre>RAPPORT DE TEST — LABORATOIRE
+Cible : MACHINE-TEST-01
+Autorisation : Laboratoire pédagogique
+Réseau : Réseau virtuel isolé
+Services observés : Service Web de test, Service de connexion distant
+Analyse : configuration, mises à jour, authentification à vérifier
+Exploitation : NON EXECUTEE</pre>
+<p><i>Rapport de démonstration, pas la sortie réelle de Fast-Track.</i></p>
+<p><b>Piège :</b> croire qu’un service accessible est forcément sécurisé (vulnérabilité connue, service exposé inutilement, authentification faible, mise à jour manquante liée à une CVE).</p>
+<p><b>Manipulation :</b> présenter une fiche de vulnérabilité fictive (logiciel, version installée, correctif recommandé) et demander ce qu’il faut vérifier avant de conclure.</p></details>
+
+<details><summary>Option 3 — Third Party Modules</summary>
+<p>Un module inconnu présenté comme « détecteur de phishing automatique » : un nom professionnel ne suffit pas.</p>
+<pre>CONTROLE D’UN MODULE TIERS
+Nom : MailGuard-Pro (fictif)
+Source : Non vérifiée   Auteur : Inconnu
+Code source : Non examiné   Permissions : Inconnues
+Décision : NE PAS INSTALLER</pre>
+<p><b>Pièges :</b> nom rassurant, permissions excessives, envoi d’informations vers un serveur extérieur, documentation convaincante mais code non sûr.</p>
+<p><b>Exercice :</b> rédiger trois vérifications préalables — provenance, examen du code, contrôle des permissions.</p></details>
+
+<details><summary>Option 4 — Update the Social-Engineer Toolkit</summary>
+<pre>CONTROLE DES MISES A JOUR
+Outil : SET
+Version locale : Version A   Version cible : Version B
+Etat : Mise à jour à vérifier
+Résultat : Aucune mise à jour exécutée</pre>
+<p><i>A et B sont des valeurs fictives.</i> <b>Piège :</b> un outil ancien peut avoir des défauts connus, mais être à jour ne signifie pas être sécurisé : il faut aussi examiner configuration, permissions et dépendances.</p>
+<pre>kali@kali:~$ sudo apt update
+kali@kali:~$ apt list --upgradable</pre>
+<p><b>Question :</b> différence entre rechercher et installer les mises à jour ? <i>Réponse :</i> la première actualise les informations disponibles, la seconde modifie les logiciels installés.</p></details>
+
+<details><summary>Option 5 — Update SET configuration</summary>
+<p>Une erreur de configuration peut exposer un service involontairement ou provoquer une communication vers l’extérieur.</p>
+<pre>CONTROLE DE CONFIGURATION
+Environnement isolé : A vérifier
+Données fictives : Oui
+Collecte de mots de passe : Désactivée
+Communication externe : Interdite
+Décision : VERIFIER AVANT UTILISATION</pre>
+<p>À vérifier : type de réseau virtuel, services en écoute, données manipulées, communications autorisées, permissions de l’outil.</p>
+<pre>kali@kali:~$ ip addr
+kali@kali:~$ ss -lntup</pre>
+<p>Un service en écoute n’est pas forcément accessible depuis Internet : examiner interfaces, pare-feu, routage et règles réseau.</p>
+<p><b>Question :</b> pourquoi préférer Host-only au mode en pont ? <i>Réponse :</i> il limite les communications au périmètre prévu du laboratoire, sous réserve de la configuration réelle.</p></details>
+
+<details><summary>Option 6 — Help, Credits, and About</summary>
+<pre>DOCUMENTATION DE L’OUTIL
+Nom : Social-Engineer Toolkit
+Fonction : Tests d’ingénierie sociale autorisés
+Avant utilisation : identifier la fonction, lire la documentation,
+vérifier les prérequis, définir les limites, prévoir les protections
+Décision : UTILISATION COMPRISE</pre>
+<p><b>Piège :</b> croire qu’un outil est sans danger parce qu’il est fourni avec Kali. Un outil légitime peut être mal utilisé : il faut comprendre ses effets et les limites de l’autorisation. Documentation : <a href="https://www.kali.org/tools/set/">page officielle de SET</a>.</p></details></section>
+
+<section id="s7"><h2>7. Le piège central : que se passe-t-il après le clic ?</h2>
+<div class="steps"><div><b>1.</b> L’utilisateur reçoit un faux e-mail « Votre compte sera suspendu ».</div><div><b>2.</b> Il clique sur un lien trompeur : le site peut imiter le portail de son organisation.</div><div><b>3.</b> Il saisit ses identifiants, qui peuvent être récupérés sur un vrai site frauduleux.</div></div>
+<p><b>Sans protection suffisante :</b> risque d’accès non autorisé. <b>Avec plusieurs défenses :</b> filtrage, signalement et MFA résistante au phishing réduisent le risque.</p>
+<div class="note">Scénario explicatif : chaque clic ne conduit pas forcément au vol d’un compte.</div></section>
+
+<section id="s8"><h2>8. Analyse d’e-mails suspects</h2>
+<div class="w"><table><tr><th>Élément</th><th>Points de contrôle</th></tr>
+<tr><td>A. L’expéditeur</td><td>Comparer le nom affiché et l’adresse réelle.</td></tr>
+<tr><td>B. Le lien</td><td>Examiner le domaine de destination sans cliquer.</td></tr>
+<tr><td>C. La pièce jointe</td><td>Fichiers inattendus, extensions trompeuses, demandes d’activation de macros.</td></tr>
+<tr><td>D. Les en-têtes</td><td>From, Reply-To, Return-Path, résultats SPF, DKIM et DMARC.</td></tr></table></div>
+<h3>Examiner un fichier e-mail fictif</h3>
+<pre>kali@kali:~$ mkdir -p ~/atelier-phishing
+kali@kali:~$ cd ~/atelier-phishing
+kali@kali:~$ nano message-suspect.eml</pre>
+<pre>From: "Support informatique" &lt;support@example.invalid&gt;
+To: etudiant@example.invalid
+Subject: URGENT - Vérification du compte
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+Votre compte nécessite une vérification immédiate.
+Ne saisissez aucune information personnelle.
+Ceci est un message fictif destiné à un exercice.</pre>
+<pre>kali@kali:~$ cat message-suspect.eml</pre>
+<p>L’extension <code>.invalid</code> évite de désigner un vrai domaine.</p>
+<h3>Questions</h3>
+<ul><li>Pourquoi le mot « URGENT » mérite-t-il notre attention ?</li><li>Le nom « Support informatique » authentifie-t-il l’expéditeur ?</li><li>Que vérifier si le message contenait un lien ?</li><li>Pourquoi ne pas transmettre son mot de passe par un lien inattendu ?</li></ul>
+<h3>Message réel reçu</h3>
+<p>Utiliser « Afficher l’original » ou « Afficher la source ». Un résultat SPF/DKIM/DMARC positif ne prouve pas la légitimité : un compte authentique compromis peut envoyer des messages frauduleux.</p>
+<div class="warn">Ne pas transférer de données confidentielles à un service d’analyse public.</div></section>
+
+<section id="s9"><h2>9. L’intérêt des filtres anti-phishing</h2>
+<p>L’utilisateur ne doit pas être le seul rempart. Le filtre analyse chaque message entrant (réputation, expéditeur, liens, pièces jointes, authentification), puis l’accepte sous surveillance ou le marque suspect (avertissement, quarantaine, blocage). Il réduit les messages frauduleux sans tout détecter.</p>
+<div class="w"><table><tr><th>Mesure</th><th>Fonction</th></tr>
+<tr><td>Filtre anti-spam</td><td>Détecte les messages indésirables et suspects.</td></tr>
+<tr><td>Anti-phishing</td><td>Repère fraude et usurpation.</td></tr>
+<tr><td>SPF</td><td>Indique quels serveurs peuvent envoyer pour un domaine.</td></tr>
+<tr><td>DKIM</td><td>Vérifie une signature cryptographique du message.</td></tr>
+<tr><td>DMARC</td><td>Politique de traitement et de signalement des échecs d’authentification.</td></tr>
+<tr><td>Protection liens et pièces jointes</td><td>Analyse destinations et fichiers suspects.</td></tr>
+<tr><td>Signalement</td><td>Permet d’alerter le service informatique.</td></tr></table></div>
+<p><b>Exercice :</b> identifier ces protections dans une messagerie de démonstration ou la documentation de Microsoft 365 ou Google Workspace, sans modifier un vrai domaine.</p></section>
+
+<section id="s10"><h2>10. Pourquoi activer la MFA ?</h2>
+<p>La MFA exige plusieurs preuves d’identité : ce que l’on <b>connaît</b> (mot de passe), ce que l’on <b>possède</b> (clé de sécurité, appareil), ce que l’on <b>est</b> (biométrie).</p>
+<div class="w"><table><tr><th>Sans MFA</th><th>Avec MFA</th></tr><tr><td>Un mot de passe récupéré peut suffire à se connecter.</td><td>Le mot de passe seul ne suffit normalement plus : l’attaquant doit aussi contourner le second facteur.</td></tr></table></div>
+<div class="warn">La MFA ne supprime pas tous les risques : une victime peut être manipulée pour approuver une demande frauduleuse.</div>
+<div class="note"><b>Bonne pratique :</b> privilégier les clés FIDO2 ou passkeys, et ne jamais approuver une demande d’authentification inattendue.</div></section>
+
+<section id="s11"><h2>11. Mise en situation : analyser trois e-mails</h2>
+<p>10 minutes, seul ou en binôme. Pour chaque message : légitime probable / phishing probable / suspect à vérifier / vérifier par un canal indépendant.</p>
+<div class="w"><table><tr><th>Message</th><th>Contenu</th></tr>
+<tr><td>A — Banque</td><td>Votre compte sera bloqué dans 10 minutes. Cliquez sur le lien et confirmez votre mot de passe.</td></tr>
+<tr><td>B — Collègue</td><td>Voici le document évoqué. (Pièce jointe inattendue.)</td></tr>
+<tr><td>C — Service informatique</td><td>Votre mot de passe expire bientôt. Message bien rédigé, nom affiché correct.</td></tr></table></div>
+<details><summary>Éléments de correction (formateur)</summary><ul>
+<li><b>A — Phishing probable :</b> urgence artificielle, menace de blocage, mot de passe via un lien. Se connecter par le site ou l’application officielle.</li>
+<li><b>B — Suspect :</b> pièce jointe inattendue, message vague. Vérifier par un canal indépendant avant ouverture.</li>
+<li><b>C — Suspect :</b> bonne rédaction et nom affiché ne prouvent rien. Vérifier l’adresse réelle, passer par le portail officiel.</li></ul></details></section>
+
+<section id="s12"><h2>12. Mini-évaluation interactive</h2><div id="quiz"></div><p id="score" class="ok"></p></section>
+
+<section id="s13"><h2>13. Livrable : support de sensibilisation et captures</h2>
+<div class="w"><table><tr><th>N°</th><th>Élément</th><th>Contenu attendu</th></tr>
+<tr><td>1</td><td>Support de sensibilisation</td><td>Une page : signes du phishing, réflexes, procédure de signalement.</td></tr>
+<tr><td>2</td><td>Capture de SET</td><td>Menu principal réel avec version installée et légende.</td></tr>
+<tr><td>3</td><td>Menu d’ingénierie sociale</td><td>Observation sans lancer de campagne.</td></tr>
+<tr><td>4</td><td>Capture de l’analyse</td><td>Fichier e-mail fictif affiché, indices suspects identifiés.</td></tr>
+<tr><td>5</td><td>Contrôles Kali</td><td><code>apt list --upgradable</code>, <code>ip addr</code>, <code>ss -lntup</code>.</td></tr>
+<tr><td>6</td><td>Tableau d’analyse</td><td>Risques, mesures, recommandations.</td></tr>
+<tr><td>7</td><td>Conclusion</td><td>Rôle complémentaire de l’utilisateur, des filtres et de la MFA.</td></tr></table></div>
+<div class="note"><b>Consigne :</b> chaque capture comporte un titre, une explication de ce qui est observé et une mesure de sécurité. Les résultats simulés sont explicitement identifiés comme tels.</div>
+<h3>Modèle de tableau à compléter</h3>
+<div class="w"><table><tr><th>Indice constaté</th><th>Risque</th><th>Mesure recommandée</th></tr>
+<tr><td>Demande urgente</td><td>Décision précipitée</td><td>Prendre le temps de vérifier</td></tr>
+<tr><td>Lien inattendu</td><td>Vol d’identifiants</td><td>Vérifier la destination sans cliquer</td></tr>
+<tr><td>Pièce jointe inattendue</td><td>Infection ou code malveillant</td><td>Vérifier l’expéditeur, analyser selon la procédure interne</td></tr>
+<tr><td>Message imitant un service officiel</td><td>Usurpation d’identité</td><td>Passer par le portail ou le numéro connu</td></tr>
+<tr><td>Mot de passe potentiellement compromis</td><td>Accès non autorisé</td><td>Signaler, changer le mot de passe depuis le portail officiel, révoquer les sessions</td></tr></table></div></section>
+
+<section id="s14"><h2>14. Évaluation des étudiants</h2><div class="w"><table><tr><th>Critère</th><th>Points</th></tr>
+<tr><td>Compréhension du phishing et des risques</td><td>4</td></tr><tr><td>Identification des indices suspects</td><td>5</td></tr><tr><td>Utilisation correcte du laboratoire et des captures</td><td>3</td></tr><tr><td>Explication des filtres et de la MFA</td><td>4</td></tr><tr><td>Qualité des recommandations et du support</td><td>4</td></tr><tr><th>Total</th><th>20/20</th></tr></table></div></section>
+
+<section id="s15"><h2>15. Conclusion à retenir</h2>
+<p>Le phishing exploite autant les comportements humains que les faiblesses techniques. Une organisation combine sensibilisation, filtres de messagerie, MFA, mises à jour et procédure claire de signalement.</p>
+<p>SET permet d’étudier les mécanismes d’ingénierie sociale ; ce sont la vigilance humaine, la configuration sécurisée, le filtrage et l’authentification résistante au phishing qui réduisent le risque.</p>
+<div class="note"><b>En cas de doute :</b> ne pas cliquer, ne pas communiquer ses identifiants, vérifier par un canal indépendant.</div></section>
+
+<section id="lex"><h2>Lexique</h2><div class="w"><table id="lx"></table></div></section>
+
+<section id="ref"><h2>Références</h2><ul>
+<li><a href="https://twagirumukiza.github.io/Twagirumukiza-Innocent/">Site de l’auteur</a> — cours et projets</li>
+<li><a href="https://www.kali.org/docs/">Documentation officielle de Kali Linux</a></li>
+<li><a href="https://www.kali.org/tools/">Catalogue des outils Kali</a></li>
+<li><a href="https://www.kali.org/tools/set/">Page officielle de SET</a></li>
+<li><a href="https://www.cybermalveillance.gouv.fr/">Cybermalveillance.gouv.fr</a></li></ul>
+<p><b>Auteur :</b> Twagirumukiza, consultant GRC et cybersécurité, formateur.</p>
+<div class="warn">Les exercices se réalisent exclusivement dans un laboratoire isolé, avec des données fictives.</div></section>
+</main>
+<footer>Document pédagogique — BTS SIO / SISR<br>by twagirumukiza</footer>
+<script>
+var S=[["s1","1. Présentation"],["s2","2. Déroulement"],["s3","3. Scénario de phishing"],["s4","4. Laboratoire Kali"],["s5","5. Découvrir SET"],["s6","6. Six options de SET"],["s7","7. Piège central"],["s8","8. Analyse d’e-mails"],["s9","9. Filtres anti-phishing"],["s10","10. MFA"],["s11","11. Trois e-mails"],["s12","12. Mini-évaluation"],["s13","13. Livrable"],["s14","14. Évaluation"],["s15","15. Conclusion"],["lex","Lexique"],["ref","Références"]];
+var nav=document.getElementById("nav");
+nav.innerHTML=S.map(function(s){return '<a href="#'+s[0]+'">'+s[1]+'</a>'}).join("");
+document.getElementById("mb").onclick=function(){nav.classList.toggle("open")};
+nav.onclick=function(e){if(e.target.tagName==="A")nav.classList.remove("open")};
+var r=document.documentElement,fs=17;
+try{var t=localStorage.getItem("th");if(t)r.setAttribute("data-theme",t);fs=+localStorage.getItem("fs")||17}catch(e){}
+function setFs(n){fs=Math.max(13,Math.min(24,n));r.style.setProperty("--fs",fs+"px");try{localStorage.setItem("fs",fs)}catch(e){}}
+setFs(fs);
+document.getElementById("fm").onclick=function(){setFs(fs-1)};
+document.getElementById("fp").onclick=function(){setFs(fs+1)};
+document.getElementById("th").onclick=function(){var d=r.getAttribute("data-theme")==="dark"||(!r.getAttribute("data-theme")&&matchMedia("(prefers-color-scheme:dark)").matches);var n=d?"light":"dark";r.setAttribute("data-theme",n);try{localStorage.setItem("th",n)}catch(e){}};
+var Q=[["Un e-mail annonce la suspension de ton compte dans 10 minutes. Que fais-tu ?",["Je clique immédiatement","Je vérifie par le portail officiel ou un canal connu","Je réponds en envoyant mon mot de passe"],1,"L’urgence est un levier de manipulation : on vérifie par un canal indépendant."],
+["Un module tiers promet de détecter tous les e-mails malveillants. Que faut-il faire ?",["L’installer immédiatement","Lui donner les droits administrateur","Vérifier sa provenance, son code et ses permissions"],2,"Un nom ou une promesse ne prouvent pas la fiabilité d’un module."],
+["À quoi sert principalement la MFA ?",["À remplacer toutes les mises à jour","À ajouter un ou plusieurs facteurs de vérification de l’identité","À supprimer tous les e-mails de phishing"],1,"La MFA complète le mot de passe ; elle ne remplace ni les mises à jour ni les filtres."],
+["Un filtre anti-phishing accepte un message. Est-il nécessairement sûr ?",["Oui, le filtre ne se trompe jamais","Non, certains messages malveillants peuvent passer","Oui, si le message est bien écrit"],1,"Aucun filtre n’est infaillible : la vigilance de l’utilisateur reste nécessaire."]];
+var done=0,good=0,qz=document.getElementById("quiz");
+Q.forEach(function(q,i){var d=document.createElement("div");d.className="q";d.innerHTML="<b>Question "+(i+1)+".</b> "+q[0]+q[1].map(function(o,j){return '<label><input type="radio" name="q'+i+'" value="'+j+'"> '+"ABC"[j]+". "+o+"</label>"}).join("")+'<div class="fb"></div>';
+d.onchange=function(e){if(d.dataset.d)return;d.dataset.d=1;var ok=+e.target.value===q[2];done++;if(ok)good++;d.querySelector(".fb").innerHTML=(ok?'<span class="ok">Correct. </span>':'<span class="ko">Incorrect — réponse : '+"ABC"[q[2]]+". </span>")+q[3];d.querySelectorAll("input").forEach(function(x){x.disabled=true});if(done===Q.length)document.getElementById("score").textContent="Score : "+good+" / "+Q.length};qz.appendChild(d)});
+var L=[["Authentification","Vérifie qu’une personne ou un système est bien celui qu’il prétend être."],["Canal indépendant","Moyen de contact distinct du message reçu (numéro connu, portail officiel, échange en personne)."],["Compromission de compte","Un tiers non autorisé obtient l’accès à un compte légitime."],["CVE","Identifiant public attribué à une vulnérabilité connue."],["DKIM","Signature cryptographique vérifiant qu’un e-mail n’a pas été modifié et vient du domaine déclaré."],["DMARC","Politique de traitement des messages échouant aux contrôles SPF/DKIM, avec rapports."],["En-têtes (headers)","Informations techniques d’un e-mail : expéditeur, chemin, résultats d’authentification."],["Extension de fichier","Suffixe indiquant le type d’un fichier ; une extension trompeuse peut cacher un fichier dangereux."],["FIDO2","Standard d’authentification forte sans mot de passe, résistant à l’hameçonnage."],["Fichier .eml","Format qui enregistre un e-mail complet avec ses en-têtes."],["Hameçonnage","Synonyme français de phishing."],["Host-only","Mode réseau reliant une VM uniquement à l’hôte et aux autres VM, sans Internet."],["Ingénierie sociale","Manipulation psychologique visant à obtenir une action ou une information."],["Instantané (snapshot)","Sauvegarde de l’état d’une VM permettant de la restaurer à l’identique."],["Kali Linux","Distribution Linux orientée sécurité, pour audits et tests d’intrusion autorisés."],["Macro","Petit programme intégré à un document, parfois utilisé pour exécuter du code malveillant."],["MFA","Authentification multifacteur combinant plusieurs preuves d’identité."],["Module tiers","Extension d’un auteur extérieur : provenance, code et permissions à vérifier."],["Passkey","Identifiant cryptographique lié à un appareil et au site légitime, difficile à hameçonner."],["Phishing","Fraude se faisant passer pour un tiers de confiance afin d’obtenir identifiants ou informations."],["Quarantaine","Zone isolant les messages suspects en attente d’examen."],["Reply-To","En-tête indiquant l’adresse de réponse, pouvant différer de l’expéditeur affiché."],["Return-Path","Adresse de retour technique pour les messages non distribués."],["SET","Social-Engineer Toolkit : outil de test des risques d’ingénierie sociale, en cadre autorisé."],["SPF","Enregistrement DNS listant les serveurs autorisés à envoyer des e-mails pour un domaine."],["Spoofing","Falsification de l’identité de l’expéditeur."],["Usurpation d’identité","Se faire passer pour une autre personne ou organisation."],["Virtualisation","Exécution de plusieurs systèmes isolés sur une même machine (VMware, VirtualBox)."]];
+document.getElementById("lx").innerHTML="<tr><th>Terme</th><th>Définition</th></tr>"+L.map(function(x){return "<tr><td><b>"+x[0]+"</b></td><td>"+x[1]+"</td></tr>"}).join("");
+</script>
+</body>
+</html>
